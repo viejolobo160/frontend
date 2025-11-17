@@ -17,48 +17,20 @@ import {
 const ProductList = ({ searchTerm }) => {
   const [sortField, setSortField] = useState("total_sold")
   const [sortDirection, setSortDirection] = useState("desc")
-  const [displayProducts, setDisplayProducts] = useState([])
 
-  const { topSellingProducts, fetchTopSellingProducts, searchResults, searchPagination, searchProductsForSales, loadMoreSearchResults, loading } = useProductStore()
+  const { searchResults, searchPagination, searchProductsForSales, loadMoreSearchResults, loading } = useProductStore()
   const { categories } = useCategoryStore()
   const { setSelectedProduct, setShowQuantityModal, cart } = useSalesStore()
 
-  useEffect(() => {
-    let isMounted = true
-
-    const loadInitialProducts = async () => {
-      try {
-        if (isMounted && topSellingProducts.length === 0) {
-          await fetchTopSellingProducts(10)
-        }
-      } catch (error) {
-        console.error("Error loading top selling products:", error)
-      }
-    }
-
-    loadInitialProducts()
-
-    return () => {
-      isMounted = false
-    }
-  }, [fetchTopSellingProducts, topSellingProducts.length])
 
   useEffect(() => {
     let isMounted = true
 
     const handleSearch = async () => {
-      try {
-        if (isMounted) {
-          // Solo buscar si hay 2 o más caracteres
-          if (searchTerm && searchTerm.trim().length >= 2) {
-            await searchProductsForSales(searchTerm, 1, false)
-          }
-        }
-      } catch (error) {
-        console.error("Error searching products:", error)
-        if (isMounted) {
-          // En caso de error, mostrar productos más vendidos
-          setDisplayProducts(topSellingProducts.filter((product) => product.active))
+      if (isMounted) {
+        // Solo buscar si hay 2 o más caracteres
+        if (searchTerm && searchTerm.trim().length >= 2) {
+          await searchProductsForSales(searchTerm, 1, false)
         }
       }
     }
@@ -68,7 +40,11 @@ const ProductList = ({ searchTerm }) => {
     return () => {
       isMounted = false
     }
-  }, [searchTerm, searchProductsForSales, topSellingProducts])
+  }, [searchTerm, searchProductsForSales])
+
+  const displayProducts = useMemo(() => {
+    return searchResults.filter((product) => product.active)
+  }, [searchResults])
 
   // Filtrar, buscar y ordenar productos
   const filteredProducts = useMemo(() => {
@@ -145,29 +121,6 @@ const ProductList = ({ searchTerm }) => {
     </th>
   )
 
-  useEffect(() => {
-    let isMounted = true
-
-    const handleSearch = async () => {
-      if (isMounted) {
-        // Solo buscar si hay 2 o más caracteres
-        if (searchTerm && searchTerm.trim().length >= 2) {
-          await searchProductsForSales(searchTerm, 1, false)
-        }
-      }
-    }
-
-    handleSearch()
-
-    return () => {
-      isMounted = false
-    }
-  }, [searchTerm, searchProductsForSales])
-
-  const displayProducts = useMemo(() => {
-    return searchResults.filter((product) => product.active)
-  }, [searchResults])
-
   const handleLoadMore = async () => {
     await loadMoreSearchResults()
   }
@@ -199,143 +152,142 @@ const ProductList = ({ searchTerm }) => {
       )}
 
       {/* Tabla de productos optimizada */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <SortHeader field="name" className="min-w-0">
-                  Producto
-                </SortHeader>
-                <SortHeader field="category" className="w-32">
-                  Categoría
-                </SortHeader>
-                <SortHeader field="price" className="w-28">
-                  Precio
-                </SortHeader>
-                <SortHeader field="stock" className="w-24">
-                  Stock
-                </SortHeader>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.map((product, index) => {
-                const category = categories.find((cat) => cat.id === product.category_id)
-                const cartQuantity = getCartQuantity(product.id)
-                const isTopSeller = !searchTerm && index < 3
+      {searchTerm && searchTerm.trim().length >= 2 && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <SortHeader field="name" className="min-w-0">
+                    Producto
+                  </SortHeader>
+                  <SortHeader field="category" className="w-32">
+                    Categoría
+                  </SortHeader>
+                  <SortHeader field="price" className="w-28">
+                    Precio
+                  </SortHeader>
+                  <SortHeader field="stock" className="w-24">
+                    Stock
+                  </SortHeader>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProducts.map((product, index) => {
+                  const category = categories.find((cat) => cat.id === product.category_id)
+                  const cartQuantity = getCartQuantity(product.id)
 
-                return (
-                  <tr
-                    key={product.id}
-                    className={`transition-colors relative ${
-                      product.stock === 0
-                        ? "bg-gray-50 opacity-60 cursor-not-allowed"
-                        : isTopSeller
-                          ? "hover:bg-orange-50 cursor-pointer bg-orange-25"
+                  return (
+                    <tr
+                      key={product.id}
+                      className={`transition-colors relative ${
+                        product.stock === 0
+                          ? "bg-gray-50 opacity-60 cursor-not-allowed"
                           : "hover:bg-blue-50 cursor-pointer"
-                    }`}
-                    onClick={() => handleAddToCart(product)}
-                    title={
-                      product.stock === 0
-                        ? "Sin stock disponible"
-                        : `Clic para agregar ${product.unit_type === "kg" ? "cantidad personalizada" : "1 unidad"} al carrito`
-                    }
-                  >
-                    {/* Producto con imagen, nombre, descripción y carrito */}
-                    <td className="px-3 py-4 min-w-0">
-                      <div className="flex items-center space-x-3">
-                        {/* Imagen */}
-                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          {product.image ? (
-                            <img
-                              src={product.image || "/placeholder.svg"}
-                              alt={product.name}
-                              className={`h-full w-full object-cover ${product.stock === 0 ? "opacity-50" : ""}`}
-                            />
-                          ) : (
-                            <PhotoIcon className="h-6 w-6 text-gray-400" />
-                          )}
-                        </div>
-
-                        {/* Información del producto */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <div className="text-sm font-medium text-gray-900 truncate flex-1">{product.name}</div>
-                            {/* Badge de carrito minimalista */}
-                            {cartQuantity > 0 && (
-                              <div className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0">
-                                <ShoppingCartIcon className="h-3 w-3 mr-1" />
-                                {formatStock(cartQuantity, product.unit_type, false)}
-                              </div>
+                      }`}
+                      onClick={() => handleAddToCart(product)}
+                      title={
+                        product.stock === 0
+                          ? "Sin stock disponible"
+                          : `Clic para agregar ${product.unit_type === "kg" ? "cantidad personalizada" : "1 unidad"} al carrito`
+                      }
+                    >
+                      {/* Producto con imagen, nombre, descripción y carrito */}
+                      <td className="px-3 py-4 min-w-0">
+                        <div className="flex items-center space-x-3">
+                          {/* Imagen */}
+                          <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            {product.image ? (
+                              <img
+                                src={product.image || "/placeholder.svg"}
+                                alt={product.name}
+                                className={`h-full w-full object-cover ${product.stock === 0 ? "opacity-50" : ""}`}
+                              />
+                            ) : (
+                              <PhotoIcon className="h-6 w-6 text-gray-400" />
                             )}
                           </div>
 
-                          {/* Descripción con tooltip */}
-                          {product.description && (
-                            <div className="text-sm text-gray-500 truncate cursor-help" title={product.description}>
-                              {product.description}
+                          {/* Información del producto */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <div className="text-sm font-medium text-gray-900 truncate flex-1">{product.name}</div>
+                              {/* Badge de carrito minimalista */}
+                              {cartQuantity > 0 && (
+                                <div className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0">
+                                  <ShoppingCartIcon className="h-3 w-3 mr-1" />
+                                  {formatStock(cartQuantity, product.unit_type, false)}
+                                </div>
+                              )}
                             </div>
-                          )}
 
-                          {/* Código de barras */}
-                          {product.barcode && (
-                            <div
-                              className="text-xs text-gray-400 font-mono truncate"
-                              title={`Código: ${product.barcode}`}
-                            >
-                              {product.barcode}
-                            </div>
+                            {/* Descripción con tooltip */}
+                            {product.description && (
+                              <div className="text-sm text-gray-500 truncate cursor-help" title={product.description}>
+                                {product.description}
+                              </div>
+                            )}
+
+                            {/* Código de barras */}
+                            {product.barcode && (
+                              <div
+                                className="text-xs text-gray-400 font-mono truncate"
+                                title={`Código: ${product.barcode}`}
+                              >
+                                {product.barcode}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Categoría */}
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 truncate max-w-full">
+                          {category?.name || "Sin categoría"}
+                        </span>
+                      </td>
+
+                      {/* Precio */}
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatCurrency(product.price)}
+                          {product.unit_type === "kg" && <div className="text-xs text-blue-600 font-medium">por kg</div>}
+                        </div>
+                        {product.cost && (
+                          <div className="text-xs text-gray-500 truncate">Costo: {formatCurrency(product.cost)}</div>
+                        )}
+                      </td>
+
+                      {/* Stock */}
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span
+                            className={`text-sm font-medium ${
+                              product.stock === 0
+                                ? "text-red-500"
+                                : product.stock <= product.min_stock
+                                  ? "text-yellow-600"
+                                  : "text-green-600"
+                            }`}
+                          >
+                            {formatStock(product.stock, product.unit_type)}
+                          </span>
+                          {product.min_stock && (
+                            <span className="text-xs text-gray-400">
+                              Mín: {formatStock(product.min_stock, product.unit_type)}
+                            </span>
                           )}
                         </div>
-                      </div>
-                    </td>
-
-                    {/* Categoría */}
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 truncate max-w-full">
-                        {category?.name || "Sin categoría"}
-                      </span>
-                    </td>
-
-                    {/* Precio */}
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatCurrency(product.price)}
-                        {product.unit_type === "kg" && <div className="text-xs text-blue-600 font-medium">por kg</div>}
-                      </div>
-                      {product.cost && (
-                        <div className="text-xs text-gray-500 truncate">Costo: {formatCurrency(product.cost)}</div>
-                      )}
-                    </td>
-
-                    {/* Stock */}
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span
-                          className={`text-sm font-medium ${
-                            product.stock === 0
-                              ? "text-red-500"
-                              : product.stock <= product.min_stock
-                                ? "text-yellow-600"
-                                : "text-green-600"
-                          }`}
-                        >
-                          {formatStock(product.stock, product.unit_type)}
-                        </span>
-                        {product.min_stock && (
-                          <span className="text-xs text-gray-400">
-                            Mín: {formatStock(product.min_stock, product.unit_type)}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {searchPagination.hasMore && (
         <div className="flex justify-center py-6">
@@ -360,7 +312,7 @@ const ProductList = ({ searchTerm }) => {
       )}
 
       {/* Mensaje cuando no hay productos */}
-      {displayProducts.length === 0 && !loading && searchTerm.trim().length >= 2 && (
+      {displayProducts.length === 0 && !loading && searchTerm && searchTerm.trim().length >= 2 && (
         <div className="text-center py-16">
           <MagnifyingGlassIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 text-xl mb-2">No se encontraron productos</p>
@@ -371,7 +323,7 @@ const ProductList = ({ searchTerm }) => {
       )}
 
       {/* Indicador de carga inicial */}
-      {loading && displayProducts.length === 0 && (
+      {loading && displayProducts.length === 0 && searchTerm && searchTerm.trim().length >= 2 && (
         <div className="text-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-500 text-lg">Buscando productos...</p>
