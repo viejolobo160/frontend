@@ -16,15 +16,11 @@ import { Squares2X2Icon, ListBulletIcon } from "@heroicons/react/24/outline"
 const Sales = () => {
   const [viewMode, setViewMode] = useState("list")
   const [searchTerm, setSearchTerm] = useState("")
-  const { fetchTopSellingProducts, topSellingProducts, loading } = useProductStore()
   const { fetchCategories } = useCategoryStore()
   const { initializeStore: initializeCustomerStore } = useCustomerStore()
-  const { setCustomer, customer } = useSalesStore()
 
-  // NUEVO: Ref para controlar inicialización
   const isInitialized = useRef(false)
 
-  // CORREGIDO: Cargar datos iniciales una sola vez
   useEffect(() => {
     if (isInitialized.current) return
 
@@ -35,19 +31,11 @@ const Sales = () => {
       try {
         console.log("🚀 Inicializando datos de ventas...")
 
-        // Cargar datos en paralelo para mejor performance
-        const promises = []
+        const promises = [
+          fetchCategories({ active: "true" }),
+          initializeCustomerStore()
+        ]
 
-        // Solo cargar productos si no hay datos
-        // promises.push(fetchTopSellingProducts(10))
-
-        // Cargar categorías
-        promises.push(fetchCategories({ active: "true" }))
-
-        // Inicializar store de clientes
-        promises.push(initializeCustomerStore())
-
-        // Ejecutar todas las promesas en paralelo
         await Promise.allSettled(promises)
 
         console.log("✅ Datos iniciales cargados")
@@ -63,13 +51,11 @@ const Sales = () => {
     return () => {
       isMounted = false
     }
-  }, []) // Solo ejecutar una vez
+  }, [fetchCategories, initializeCustomerStore])
 
   const handleSearchChange = (term) => {
     setSearchTerm(term)
   }
-
-  // Eliminar handleRefreshTopProducts, ya no se cargan productos al inicio
 
   return (
     <div className="space-y-6">
@@ -118,16 +104,7 @@ const Sales = () => {
 
           {/* Grid/Lista de productos */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            {loading && topSellingProducts.length === 0 ? (
-              <div className="flex items-center justify-center py-12">
-                <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin mr-3" />
-                <span className="text-gray-500">Cargando productos más vendidos...</span>
-              </div>
-            ) : (
-              <>
-                {viewMode === "grid" ? <ProductGrid searchTerm={searchTerm} /> : <ProductList searchTerm={searchTerm} />}
-              </>
-            )}
+            {viewMode === "grid" ? <ProductGrid searchTerm={searchTerm} /> : <ProductList searchTerm={searchTerm} />}
           </div>
         </div>
 
