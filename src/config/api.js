@@ -1,7 +1,7 @@
 import axios from "axios"
 
 // Configuración base de la API
-const API_BASE_URL = import.meta.env.VITE_API_URL ||  "https://api.miniservice24.site/api"
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 
 // NUEVO: Cache simple para requests GET
