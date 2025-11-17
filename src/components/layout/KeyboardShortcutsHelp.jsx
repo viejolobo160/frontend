@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react"
 import { Dialog, Transition } from "@headlessui/react"
-import { XMarkIcon, KeyboardIcon } from "@heroicons/react/24/outline"
+import { XMarkIcon, CommandLineIcon } from "@heroicons/react/24/outline"
 
 /**
  * Componente para mostrar ayuda de atajos de teclado
@@ -63,7 +63,7 @@ const KeyboardShortcutsHelp = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <KeyboardIcon className="h-5 w-5 text-blue-600" />
+                      <CommandLineIcon className="h-5 w-5 text-blue-600" />
                     </div>
                     <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900">
                       Atajos de Teclado
