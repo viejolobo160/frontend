@@ -53,7 +53,6 @@ const CustomerForm = ({ customer, onClose, onSuccess }) => {
     { id: "credit", name: "Crédito y Notas", icon: CurrencyDollarIcon },
   ]
 
-  // Cargar datos del cliente si estamos editando
   useEffect(() => {
     if (customer) {
       setFormData({
@@ -180,6 +179,34 @@ const CustomerForm = ({ customer, onClose, onSuccess }) => {
     }
   }
 
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = "El nombre es requerido"
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "El nombre debe tener al menos 2 caracteres"
+    }
+
+    // Email opcional pero debe ser válido
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "El email no es válido"
+    }
+
+    // Teléfono opcional pero debe tener formato válido
+    if (formData.phone && formData.phone.length < 8) {
+      newErrors.phone = "El teléfono debe tener al menos 8 dígitos"
+    }
+
+    // Límite de crédito no puede ser negativo
+    if (formData.credit_limit && Number.parseFloat(formData.credit_limit) < 0) {
+      newErrors.credit_limit = "El límite de crédito no puede ser negativo"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -188,6 +215,12 @@ const CustomerForm = ({ customer, onClose, onSuccess }) => {
 
     if (!allSectionsValid) {
       showToast("Por favor corrige todos los errores en el formulario", "error")
+      return
+    }
+
+    // Usar la validación completa del formulario
+    if (!validateForm()) {
+      showToast("Por favor corrige los errores en el formulario", "error")
       return
     }
 
@@ -251,36 +284,32 @@ const CustomerForm = ({ customer, onClose, onSuccess }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all flex flex-col max-h-[95vh]">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                  <div className="flex items-center space-x-4">
+              {/* Dialog.Panel ajustado en ancho y alto */}
+              <Dialog.Panel className="w-full max-w-7xl transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all flex flex-col max-h-[95vh]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-blue-700">
+                  <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center">
                         {customer ? (
-                          <PencilIcon className="h-6 w-6 text-white" />
+                          <PencilIcon className="h-5 w-5 text-white" />
                         ) : (
-                          <PlusIcon className="h-6 w-6 text-white" />
+                          <PlusIcon className="h-5 w-5 text-white" />
                         )}
                       </div>
                     </div>
-                    <div>
-                      <Dialog.Title as="h3" className="text-xl font-semibold text-gray-900">
+                    <div className="text-left">
+                      <Dialog.Title as="h3" className="text-lg font-semibold text-white">
                         {customer ? "Editar Cliente" : "Nuevo Cliente"}
                       </Dialog.Title>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {customer
-                          ? "Modifica la información del cliente"
-                          : `Paso ${currentSectionIndex + 1} de ${sections.length}: ${
-                              sections[currentSectionIndex]?.name
-                            }`}
+                      <p className="text-xs text-blue-100 mt-0.5">
+                        {customer ? "Actualiza la información del cliente" : "Completa los datos para crear el cliente"}
                       </p>
                     </div>
                   </div>
 
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                    className="text-white/80 hover:text-white hover:bg-white/10 transition-colors p-1.5 rounded-lg"
                   >
                     <XMarkIcon className="h-5 w-5" />
                   </button>
@@ -290,7 +319,8 @@ const CustomerForm = ({ customer, onClose, onSuccess }) => {
                 <div className="flex-1 overflow-hidden">
                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
                     {/* Sidebar */}
-                    <div className="lg:col-span-1 p-6 border-r border-gray-100">
+                    {/* Sidebar oculto en pantallas pequeñas, y se mueve a la derecha en pantallas grandes */}
+                    <div className="lg:col-span-1 hidden lg:block border-r border-gray-100 bg-gray-50 p-6 overflow-y-auto">
                       <div className="lg:sticky lg:top-0 space-y-4">
                         {/* Progress indicator */}
                         <div className="mb-6">
@@ -716,52 +746,32 @@ const CustomerForm = ({ customer, onClose, onSuccess }) => {
                 </div>
 
                 {/* Footer con navegación - ACTUALIZADO con botones como ProductForm */}
-                <div className="flex gap-3 p-6 border-t border-gray-100 bg-gray-50">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onClose}
-                    className="py-3 text-sm font-medium rounded-xl bg-transparent"
+                    className="py-2.5 px-5 text-sm font-medium rounded-lg"
                   >
                     Cancelar
                   </Button>
 
-                  <div className="flex-1"></div>
-
-                  {/* Botón Atrás */}
-                  {currentSectionIndex > 0 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleBack}
-                      className="py-3 px-6 text-sm font-medium rounded-xl bg-white border-gray-300 hover:bg-gray-50"
-                    >
-                      <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                      Atrás
-                    </Button>
-                  )}
-
-                  {/* Botón Continuar o Crear/Actualizar */}
-                  {isLastSection ? (
-                    <Button
-                      type="submit"
-                      loading={loading}
-                      onClick={handleSubmit}
-                      className="py-3 px-6 text-sm font-medium bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 rounded-xl shadow-lg"
-                      disabled={loading}
-                    >
-                      {loading ? "Guardando..." : customer ? "Actualizar Cliente" : "Crear Cliente"}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={handleContinue}
-                      className="py-3 px-6 text-sm font-medium bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 rounded-xl shadow-lg"
-                    >
-                      Continuar
-                      <ArrowRightIcon className="h-4 w-4 ml-2" />
-                    </Button>
-                  )}
+                  <Button
+                    type="submit"
+                    loading={loading}
+                    onClick={handleSubmit}
+                    className="py-2.5 px-5 text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg shadow-sm"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      "Guardando..."
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="h-4 w-4 mr-1.5 inline" />
+                        {customer ? "Actualizar Cliente" : "Crear Cliente"}
+                      </>
+                    )}
+                  </Button>
                 </div>
               </Dialog.Panel>
             </Transition.Child>
