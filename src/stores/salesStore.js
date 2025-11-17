@@ -58,6 +58,8 @@ export const useSalesStore = create((set, get) => ({
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
 
+  setShowPaymentModal: (show) => set({ showPaymentModal: show }),
+
   // NUEVO: Acciones para modal de cantidad
   setShowQuantityModal: (show) => set({ showQuantityModal: show }),
   setSelectedProduct: (product) => set({ selectedProduct: product }),
