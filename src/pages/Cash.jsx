@@ -78,24 +78,6 @@ const Cash = () => {
     )
   }
 
-  useEffect(() => {
-    const handleOpenCloseModalEvent = () => {
-      // Solo abrir el modal si la caja está abierta
-      if (currentCash.isOpen) {
-        setShowCloseForm(true)
-      } else {
-        // Si la caja está cerrada, mostrar un toast informativo
-        console.log("La caja debe estar abierta para realizar un cierre")
-      }
-    }
-    
-    window.addEventListener("openCashCloseModal", handleOpenCloseModalEvent)
-    
-    return () => {
-      window.removeEventListener("openCashCloseModal", handleOpenCloseModalEvent)
-    }
-  }, [currentCash.isOpen])
-
   return (
     <div className="space-y-6">
       {/* Header */}

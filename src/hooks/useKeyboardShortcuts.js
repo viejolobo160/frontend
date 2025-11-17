@@ -8,8 +8,8 @@ import { useToast } from "@/contexts/ToastContext"
  * 
  * Atajos disponibles:
  * - F1: Ir a Ventas
- * - F6: Ir a Caja y abrir modal de cierre (si está abierta)
- * - F10: Ir a Stock y abrir modal de crear producto
+ * - F6: Ir a Caja (Cierre de caja)
+ * - F10: Ir a Stock (Carga de productos)
  * - F12: Cerrar sesión
  */
 export const useKeyboardShortcuts = () => {
@@ -41,34 +41,22 @@ export const useKeyboardShortcuts = () => {
         return
       }
 
+      // F6 - Ir a Caja (Cierre de caja)
       if (key === "F6") {
         event.preventDefault()
         if (location.pathname !== "/caja") {
           navigate("/caja")
           showToast("Navegando a Control de Caja", "info")
-          // Esperar un momento para que la página cargue y luego disparar el evento
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent("openCashCloseModal"))
-          }, 100)
-        } else {
-          // Ya estamos en la página de caja, solo disparar el evento
-          window.dispatchEvent(new CustomEvent("openCashCloseModal"))
         }
         return
       }
 
+      // F10 - Ir a Stock (Carga de productos)
       if (key === "F10") {
         event.preventDefault()
         if (location.pathname !== "/stock") {
           navigate("/stock")
           showToast("Navegando a Gestión de Stock", "info")
-          // Esperar un momento para que la página cargue y luego disparar el evento
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent("openProductModal"))
-          }, 100)
-        } else {
-          // Ya estamos en la página de stock, solo disparar el evento
-          window.dispatchEvent(new CustomEvent("openProductModal"))
         }
         return
       }
@@ -109,8 +97,8 @@ export const useKeyboardShortcuts = () => {
   return {
     shortcuts: [
       { key: "F1", action: "Ir a Ventas", path: "/ventas" },
-      { key: "F6", action: "Ver Cierre de Caja y abrir modal", path: "/caja" },
-      { key: "F10", action: "Carga de Productos y abrir modal", path: "/stock" },
+      { key: "F6", action: "Ver Cierre de Caja", path: "/caja" },
+      { key: "F10", action: "Carga de Productos", path: "/stock" },
       { key: "F12", action: "Cerrar Sesión", path: null },
     ],
   }

@@ -18,12 +18,12 @@ const KeyboardShortcutsHelp = ({ isOpen, onClose }) => {
     {
       key: "F6",
       action: "Ver Cierre de Caja",
-      description: "Accede al control de caja y abre el modal de cierre si está abierta",
+      description: "Accede al control de caja para ver estado y realizar cierre",
     },
     {
       key: "F10",
       action: "Carga de Productos",
-      description: "Navega a stock y abre el modal para crear un nuevo producto",
+      description: "Navega a la gestión de stock para administrar productos",
     },
     {
       key: "F12",
