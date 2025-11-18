@@ -3,7 +3,6 @@ import { useConfigStore } from "@/stores/configStore"
 import { useToast } from "@/contexts/ToastContext"
 import Button from "@/components/common/Button"
 import LoadingButton from "@/components/common/LoandingButton"
-import PrinterTestModal from "./PrinterTestModal"
 import PrinterConfigModal from "./PrinterConfigModal" // Import new PrinterConfigModal component
 import { ReceiptPercentIcon, PrinterIcon } from "@heroicons/react/24/outline"
 
@@ -501,12 +500,6 @@ const TicketConfigTab = () => {
           </LoadingButton>
         </div>
       </form>
-
-      <PrinterTestModal
-        isOpen={showPrinterModal}
-        onClose={() => setShowPrinterModal(false)}
-        onPrinterSelected={handlePrinterSelected}
-      />
 
       {/* Added PrinterConfigModal component */}
       {showPrinterConfigModal && (
