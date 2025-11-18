@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useConfigStore } from "@/stores/configStore"
 import { useToast } from "@/contexts/ToastContext"
 import Button from "@/components/common/Button"
-import LoadingButton from "@/components/common/LoandingButton"
+import LoadingButton from "@/components/common/LoadingButton"
 import { ReceiptPercentIcon } from "@heroicons/react/24/outline"
 
 const TicketConfigTab = () => {
@@ -328,6 +328,55 @@ const TicketConfigTab = () => {
                   </label>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Método de Impresión */}
+          <div>
+            <h4 className="text-md font-semibold text-gray-900 mb-4">Método de Impresión</h4>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Seleccionar método de impresión
+                </label>
+                <select
+                  name="print_method"
+                  value={formData.print_method || 'serial'}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="serial">Serial USB (XPrinter XP-58) - Recomendado</option>
+                  <option value="bluetooth">Bluetooth</option>
+                  <option value="localserver">Servidor Local (puerto 9100)</option>
+                  <option value="preview">Vista Previa Solo</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-2 space-y-1">
+                  <div>• <strong>Serial USB:</strong> Para impresoras conectadas directamente por USB</div>
+                  <div>• <strong>Bluetooth:</strong> Para impresoras inalámbricas</div>
+                  <div>• <strong>Servidor Local:</strong> Para Zebra Print Server en red (puerto 9100)</div>
+                  <div>• <strong>Vista Previa:</strong> Solo mostrar sin imprimir (útil para pruebas)</div>
+                </p>
+              </div>
+
+              {/* URL del Servidor de Impresión */}
+              {formData.print_method === 'localserver' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL del Servidor de Impresión
+                  </label>
+                  <input
+                    type="text"
+                    name="local_printer_url"
+                    value={formData.local_printer_url || 'http://localhost:9100'}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="http://localhost:9100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Puerto 9100 es el estándar para Zebra Print Server
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

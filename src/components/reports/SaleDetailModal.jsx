@@ -8,6 +8,7 @@ import { useConfigStore } from "../../stores/configStore"
 import { formatCurrency, formatDateTime, formatQuantity } from "../../lib/formatters"
 import { useToast } from "../../contexts/ToastContext"
 import ticketPrintService from "../../services/ticketPrintService"
+import escposService from "../../services/escposService"
 import {
   XMarkIcon,
   UserIcon,
@@ -93,6 +94,52 @@ const SaleDetailModal = ({ isOpen, onClose, saleId, onSaleUpdated }) => {
 
         if (!response.data.success) {
           throw new Error(response.data.message || 'Error al imprimir')
+        }
+
+        if (response.data.data?.commands) {
+          
+          // Determine print method based on configuration
+          let printResult = null
+          const printMethod = ticketConfig?.print_method || 'preview' // Fallback to preview
+          
+          console.log('[v0] Usando método de impresión:', printMethod)
+          
+          switch(printMethod) {
+            case 'serial':
+              try {
+                printResult = await escposService.printViaSerialPort(response.data.data.commands)
+              } catch (serialError) {
+                console.warn('[v0] Error Serial USB, intentando fallback...')
+                printResult = await escposService.printViaPreview(response.data.data.commands)
+              }
+              break
+              
+            case 'bluetooth':
+              try {
+                printResult = await escposService.printViaBluetooth(response.data.data.commands)
+              } catch (bluetoothError) {
+                console.warn('[v0] Error Bluetooth, intentando fallback...')
+                printResult = await escposService.printViaPreview(response.data.data.commands)
+              }
+              break
+              
+            case 'localserver':
+              try {
+                const localServerUrl = ticketConfig?.local_printer_url || 'http://localhost:9100'
+                printResult = await escposService.printViaLocalServer(response.data.data.commands, localServerUrl)
+              } catch (serverError) {
+                console.warn('[v0] Error Local Server, intentando fallback...')
+                printResult = await escposService.printViaPreview(response.data.data.commands)
+              }
+              break
+              
+            case 'preview':
+            default:
+              printResult = await escposService.printViaPreview(response.data.data.commands)
+              break
+          }
+          
+          console.log('[v0] Resultado de impresión:', printResult)
         }
 
         if (i < printCopies - 1) {
@@ -282,12 +329,12 @@ const SaleDetailModal = ({ isOpen, onClose, saleId, onSaleUpdated }) => {
     }
 
     const saleInfo = `
-Venta #${sale.id}
-Fecha: ${formatDateTime(sale.created_at)}
-Cliente: ${sale.customer_name || "Cliente general"}
-Método de pago: ${paymentInfo}
-Total: ${formatCurrency(sale.total)}
-Estado: ${sale.status === "completed" ? "Completada" : "Cancelada"}
+      Venta #${sale.id}
+      Fecha: ${formatDateTime(sale.created_at)}
+      Cliente: ${sale.customer_name || "Cliente general"}
+      Método de pago: ${paymentInfo}
+      Total: ${formatCurrency(sale.total)}
+      Estado: ${sale.status === "completed" ? "Completada" : "Cancelada"}
     `.trim()
 
     navigator.clipboard.writeText(saleInfo).then(() => {
