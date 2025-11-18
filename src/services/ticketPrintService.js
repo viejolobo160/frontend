@@ -128,10 +128,7 @@ class TicketPrintService {
       return { success: true }
     } catch (error) {
       console.error('Error al mostrar vista previa:', error)
-      return { 
-        success: false, 
-        error: error.message || 'Error al mostrar vista previa del ticket'
-      }
+      throw error
     }
   }
 
@@ -164,10 +161,7 @@ class TicketPrintService {
       return { success: true }
     } catch (error) {
       console.error('Error al descargar ticket:', error)
-      return { 
-        success: false, 
-        error: error.message || 'Error al descargar el ticket'
-      }
+      throw error
     }
   }
 
@@ -183,8 +177,7 @@ class TicketPrintService {
     const fontSize = ticketConfig.font_size === 'small' ? '10px' : 
                      ticketConfig.font_size === 'large' ? '14px' : '12px'
 
-    let html = `
-      <!DOCTYPE html>
+    let html = `<!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
@@ -284,8 +277,7 @@ class TicketPrintService {
         </style>
       </head>
       <body>
-        <div class="ticket">
-    `
+        <div class="ticket">`
 
     // Encabezado con información del negocio
     if (ticketConfig.show_business_info && businessConfig) {

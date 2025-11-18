@@ -76,39 +76,41 @@ const TicketPrintModal = ({ isOpen, onClose, saleData }) => {
     }
   }
 
-  const handlePreview = () => {
-    ticketPrintService.configure(
-      ticketConfig.printer_name,
-      ticketConfig.paper_width
-    )
+  const handlePreview = async () => {
+    try {
+      ticketPrintService.configure(
+        ticketConfig.printer_name,
+        ticketConfig.paper_width
+      )
 
-    const result = ticketPrintService.previewTicket(
-      saleData,
-      businessConfig,
-      ticketConfig
-    )
-
-    if (!result.success) {
-      showToast(result.error || "No se pudo mostrar la vista previa", "error")
+      ticketPrintService.previewTicket(
+        saleData,
+        businessConfig,
+        ticketConfig
+      )
+      
+      showToast("Vista previa abierta correctamente", "success")
+    } catch (error) {
+      showToast(error.message || "No se pudo mostrar la vista previa", "error")
     }
   }
 
-  const handleDownload = () => {
-    ticketPrintService.configure(
-      ticketConfig.printer_name,
-      ticketConfig.paper_width
-    )
+  const handleDownload = async () => {
+    try {
+      ticketPrintService.configure(
+        ticketConfig.printer_name,
+        ticketConfig.paper_width
+      )
 
-    const result = ticketPrintService.downloadTicket(
-      saleData,
-      businessConfig,
-      ticketConfig
-    )
-
-    if (result.success) {
+      ticketPrintService.downloadTicket(
+        saleData,
+        businessConfig,
+        ticketConfig
+      )
+      
       showToast("El ticket se descargó correctamente", "success")
-    } else {
-      showToast(result.error || "No se pudo descargar el ticket", "error")
+    } catch (error) {
+      showToast(error.message || "No se pudo descargar el ticket", "error")
     }
   }
 
