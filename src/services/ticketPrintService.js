@@ -5,7 +5,7 @@ class TicketPrintService {
   constructor() {
     this.printerName = null
     this.paperWidth = 58 // 58mm por defecto para térmica
-    this.apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    this.apiUrl = import.meta.env.VITE_API_URL
   }
 
   /**
@@ -27,7 +27,7 @@ class TicketPrintService {
         throw new Error('No se encontró token de autenticación')
       }
 
-      const response = await fetch(`${this.apiUrl}/api/config/ticket/generate-pdf`, {
+      const response = await fetch(`${this.apiUrl}/config/ticket/generate-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
